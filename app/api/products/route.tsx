@@ -1,11 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import schema from "./schema";
-export function GET(request:Request) {
-    return NextResponse.json([
-        {id:1,name:'Milk',price:2.5},
-        {id:2,name:'Bread',price:1.5},
-        {id:3,name:'Eggs',price:3.0},
-    ]);
+import { prisma } from "@/lib/prisma";
+export async function GET(request:Request) {
+    const product = await prisma.product.findMany();
+    return NextResponse.json(product);
 }
 
 export async function POST(request:Request) {
@@ -13,5 +11,12 @@ export async function POST(request:Request) {
     const validation = schema.safeParse(body);
     if(!validation.success)
         return NextResponse.json({error:validation.error.message},{status:400});
-    return NextResponse.json({id:1,name:body.name,price:body.price},{status:201});
+    const product = prisma.product.create({
+        data:{
+            name:body.name,
+            price:body.price,
+        }
+    })
+    return NextResponse.json(product,{status:201});
 }
+
